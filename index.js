@@ -15,6 +15,6 @@ const modeles = require("./modeles");
 app.use(modeles);
 /////////
 
-app.listen(port, () => {
+app.listen(process.env.port, () => {
   console.log(`Serveur vinted lancé sur le port : ${port} `);
 });
