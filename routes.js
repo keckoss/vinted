@@ -4,9 +4,9 @@ const router = express.Router();
 const fileUpload = require("express-fileupload");
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
-  cloud_name: process.env.cloud_name,
-  api_key: process.env.api_key,
-  api_secret: process.env.api_secret,
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
 });
 const convertToBase64 = (file) => {
   return `data:${file.mimetype};base64,${file.data.toString("base64")}`;
@@ -155,12 +155,67 @@ router.post(
         owner: owner,
       });
       await newOffer.save();
-      const result = await cloudinary.uploader.upload(
-        convertToBase64(pictureToUpload),
-        { folder: `/vinted/offers/${newOffer._id}` }
-      );
-      newOffer.product_image = result.secure_url;
+      // Si on ne reçoit qu'une image (req.files.picture n'est donc pas un tableau)
+      if (!Array.isArray(req.files.picture)) {
+        // On vérifie qu'on a bien affaire à une image
+        if (req.files.picture.mimetype.slice(0, 5) !== "image") {
+          return res.status(400).json({ message: "You must send images" });
+        }
+        // Envoi de l'image à cloudinary
+        const result = await cloudinary.uploader.upload(
+          convertToBase64(req.files.picture),
+          {
+            // Dans le dossier suivant
+            folder: `api/vinted-v2/offers/${newOffer._id}`,
+            // Avec le public_id suivant
+            public_id: "preview",
+          }
+        );
+
+        // ajout de l'image dans newOffer
+        newOffer.product_image = result;
+        // On rajoute l'image à la clef product_pictures
+        newOffer.product_pictures.push(result);
+      } else {
+        // Si on a affaire à un tableau, on le parcourt
+        for (let i = 0; i < req.files.picture.length; i++) {
+          const picture = req.files.picture[i];
+          // Si on a afaire à une image
+          if (picture.mimetype.slice(0, 5) !== "image") {
+            return res.status(400).json({ message: "You must send images" });
+          }
+          if (i === 0) {
+            // On envoie la première image à cloudinary et on en fait l'image principale (product_image)
+            const result = await cloudinary.uploader.upload(
+              convertToBase64(picture),
+              {
+                folder: `api/vinted-v2/offers/${newOffer._id}`,
+                public_id: "preview",
+              }
+            );
+            // ajout de l'image dans newOffer
+            newOffer.product_image = result;
+            newOffer.product_pictures.push(result);
+          } else {
+            // On envoie toutes les autres à cloudinary et on met les résultats dans product_pictures
+            const result = await cloudinary.uploader.upload(
+              convertToBase64(picture),
+              {
+                folder: `api/vinted-v2/offers/${newOffer._id}`,
+              }
+            );
+            newOffer.product_pictures.push(result);
+          }
+        }
+      }
       await newOffer.save();
+
+      // const result = await cloudinary.uploader.upload(
+      //   convertToBase64(pictureToUpload),
+      //   { folder: `/vinted/offers/${newOffer._id}` }
+      // );
+      // newOffer.product_image = result.secure_url;
+      // await newOffer.save();
       return res.status(200).json({ message: "offer created" });
     } catch (error) {
       res.status(500).json({ message: error.message });

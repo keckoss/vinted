@@ -13,7 +13,7 @@ const routes = require("./routes");
 app.use(routes);
 const modeles = require("./modeles");
 app.use(modeles);
-/////////
+////////
 
 app.listen(port, () => {
   console.log(`Serveur vinted lancé sur le port : ${port} `);
