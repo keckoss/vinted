@@ -1,4 +1,4 @@
-const Users = require("./modeles");
+const Users = require("../models/users");
 const isAuthenticated = async (req, res, next) => {
   if (req.headers.authorization) {
     const user = await Users.findOne({

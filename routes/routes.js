@@ -11,15 +11,15 @@ cloudinary.config({
 const convertToBase64 = (file) => {
   return `data:${file.mimetype};base64,${file.data.toString("base64")}`;
 };
-const Users = require("./modeles");
+const Users = require("../models/users");
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
-const isAuthenticated = require("./middleware");
-const Offer = require("./offers");
+const isAuthenticated = require("../middlewares/middleware");
+const Offer = require("../models/offers");
 const mongoose = require("mongoose");
 
-//HP du projet
+//HP du projetss
 router.get("/", async (req, res) => {
   try {
     return res.status(200).json("bienvenue sur le serveur vinted");

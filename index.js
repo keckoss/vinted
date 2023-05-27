@@ -9,9 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 //////////
-const routes = require("./routes");
+const routes = require("./routes/routes");
 app.use(routes);
-const modeles = require("./modeles");
+const modeles = require("./models/users");
 app.use(modeles);
 ////////
 
