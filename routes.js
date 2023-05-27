@@ -124,8 +124,6 @@ router.post(
   fileUpload(),
   async (req, res) => {
     try {
-      const pictureToUpload = req.files.picture;
-
       const user = await Users.findOne({
         token: req.headers.authorization.replace("Bearer ", ""),
       });
