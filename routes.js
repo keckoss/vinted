@@ -86,7 +86,7 @@ router.post("/user/signup", fileUpload(), async (req, res) => {
         },
       };
       console.log("user created");
-      return res.status(200).json({ message: "user created" });
+      return res.status(200).json({ aftercreation });
     }
   } catch (error) {
     return res.status(400).json({ message: error.message });
