@@ -11,6 +11,10 @@ cloudinary.config({
 const convertToBase64 = (file) => {
   return `data:${file.mimetype};base64,${file.data.toString("base64")}`;
 };
+const stripe = require("stripe")(
+  "sk_test_51NZ9PJH6lRhKfI4aEFJ6ZO5qCbI7Uqx5bmqn2obIg4S3y7PPFJKPA5BhcyJsQrqOXdd9nBzpz61GztBjdBoUPyg800x8dCitTm"
+);
+
 const Users = require("../models/users");
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
@@ -28,6 +32,26 @@ router.get("/", async (req, res) => {
   }
 });
 ///////// auth
+
+//paiement
+app.post("/pay", async (req, res) => {
+  // Réception du token créer via l'API Stripe depuis le Frontend
+  const stripeToken = req.body.stripeToken;
+  // Créer la transaction
+  const response = await stripe.charges.create({
+    amount: req.body.amount,
+    currency: "eur",
+    description: "La description de l'objet acheté",
+    // On envoie ici le token
+    source: stripeToken,
+  });
+  console.log(response.status);
+
+  // TODO
+  // Sauvegarder la transaction dans une BDD MongoDB
+
+  res.json(response);
+});
 
 //// creation d'un compte user
 router.post("/user/signup", fileUpload(), async (req, res) => {
